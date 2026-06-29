@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block page_title %}快递员工作台{% endblock %}
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-icon blue">📌</div><div class="stat-info"><h3>{{ pending_count }}</h3><p>待处理</p></div></div>
+    <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h3>{{ completed_count }}</h3><p>已完成</p></div></div>
+    <div class="stat-card"><div class="stat-icon yellow">📋</div><div class="stat-info"><h3>{{ tasks|length }}</h3><p>今日任务</p></div></div>
+</div>
+
+{% if profile %}
+<div class="card">
+    <div class="card-header"><div class="card-title">个人信息</div></div>
+    <div class="form-row-3">
+        <div><strong>工号：</strong>{{ profile.employee_id }}</div>
+        <div><strong>评分：</strong>⭐ {{ profile.rating }}</div>
+        <div><strong>总订单：</strong>{{ profile.total_orders }}</div>
+    </div>
+    <div class="form-row-3">
+        <div><strong>总收入：</strong>¥{{ profile.total_income }}</div>
+        <div><strong>交通工具：</strong>{{ profile.get_vehicle_type_display }}</div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">今日任务</div>
+        <a href="{% url 'courier_tasks' %}" class="btn btn-outline btn-sm">查看全部 →</a>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead><tr><th>订单号</th><th>类型</th><th>寄件人/收件人</th><th>地址</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+                {% for t in tasks %}
+                <tr>
+                    <td>{{ t.order.order_no }}</td>
+                    <td><span class="badge {% if t.task_type == 'pickup' %}badge-primary{% else %}badge-success{% endif %}">{{ t.get_task_type_display }}</span></td>
+                    <td>{% if t.task_type == 'pickup' %}{{ t.order.sender_name }}{% else %}{{ t.order.receiver_name }}{% endif %}</td>
+                    <td>{% if t.task_type == 'pickup' %}{{ t.order.sender_address|truncatechars:20 }}{% else %}{{ t.order.receiver_address|truncatechars:20 }}{% endif %}</td>
+                    <td><span class="badge 
+                        {% if t.status == 'completed' %}badge-success
+                        {% elif t.status == 'in_progress' %}badge-primary
+                        {% else %}badge-warning{% endif %}">{{ t.get_status_display }}</span></td>
+                    <td>
+                        {% if t.task_type == 'pickup' and t.status != 'completed' %}
+                        <form method="post" action="{% url 'courier_task_pickup' t.id %}" style="display:inline">
+                            {% csrf_token %}
+                            <button class="btn btn-success btn-sm">揽收</button>
+                        </form>
+                        {% elif t.task_type == 'deliver' and t.status != 'completed' %}
+                        <form method="post" action="{% url 'courier_task_deliver' t.id %}" style="display:inline">
+                            {% csrf_token %}
+                            <button class="btn btn-success btn-sm">签收</button>
+                        </form>
+                        <a href="{% url 'courier_report_anomaly' t.id %}" class="btn btn-danger btn-sm">异常</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6"><div class="empty-state"><p>今日暂无任务</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

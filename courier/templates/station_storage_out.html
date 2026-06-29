@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block page_title %}包裹出库{% endblock %}
+{% block content %}
+<div class="card" style="max-width:500px;margin:0 auto">
+    <div class="card-header"><div class="card-title">📤 包裹出库验证</div></div>
+    <div class="card" style="background:var(--gray-50);margin-bottom:16px">
+        <p><strong>运单号：</strong>{{ inv.tracking_id }}</p>
+        <p><strong>取件码：</strong><span style="font-size:24px;font-weight:700;color:var(--primary);letter-spacing:4px">{{ inv.pick_code }}</span></p>
+        <p><strong>入库时间：</strong>{{ inv.storage_time|date:"Y-m-d H:i" }}</p>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">请输入取件码验证 *</label>
+            <input type="text" name="pick_code" class="form-input" required placeholder="输入取件码" style="font-size:18px;text-align:center;letter-spacing:4px">
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">取件人姓名</label><input type="text" name="receiver_name" class="form-input"></div>
+            <div class="form-group"><label class="form-label">取件人电话</label><input type="text" name="receiver_phone" class="form-input"></div>
+        </div>
+        <button type="submit" class="btn btn-success" style="width:100%;justify-content:center">确认出库</button>
+    </form>
+</div>
+{% endblock %}

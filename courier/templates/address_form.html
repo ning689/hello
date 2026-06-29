@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:600px;margin:0 auto">
+    <div class="card-header"><div class="card-title">{{ title }}</div></div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">标签</label>
+            <select name="label" class="form-select">
+                <option value="home" {% if addr and addr.label == 'home' %}selected{% endif %}>家</option>
+                <option value="company" {% if addr and addr.label == 'company' %}selected{% endif %}>公司</option>
+                <option value="school" {% if addr and addr.label == 'school' %}selected{% endif %}>学校</option>
+                <option value="other" {% if addr and addr.label == 'other' %}selected{% endif %}>其他</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">联系人 *</label><input type="text" name="name" class="form-input" required value="{{ addr.name|default:'' }}"></div>
+            <div class="form-group"><label class="form-label">电话 *</label><input type="text" name="phone" class="form-input" required value="{{ addr.phone|default:'' }}"></div>
+        </div>
+        <div class="form-row-3">
+            <div class="form-group"><label class="form-label">省份 *</label><input type="text" name="province" class="form-input" required value="{{ addr.province|default:'' }}"></div>
+            <div class="form-group"><label class="form-label">城市 *</label><input type="text" name="city" class="form-input" required value="{{ addr.city|default:'' }}"></div>
+            <div class="form-group"><label class="form-label">区县 *</label><input type="text" name="district" class="form-input" required value="{{ addr.district|default:'' }}"></div>
+        </div>
+        <div class="form-group"><label class="form-label">详细地址 *</label><input type="text" name="detail" class="form-input" required value="{{ addr.detail|default:'' }}"></div>
+        <button type="submit" class="btn btn-primary">保存</button>
+        <a href="{% url 'address_list' %}" class="btn btn-outline">取消</a>
+    </form>
+</div>
+{% endblock %}

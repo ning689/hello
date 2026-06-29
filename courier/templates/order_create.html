@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block page_title %}在线寄件{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header"><div class="card-title">填写寄件信息</div></div>
+    <form method="post">
+        {% csrf_token %}
+        <h3 style="margin-bottom:12px;color:var(--primary)">📤 寄件人信息</h3>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">姓名 *</label><input type="text" name="sender_name" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">电话 *</label><input type="text" name="sender_phone" class="form-input" required placeholder="手机号"></div>
+        </div>
+        <div class="form-row-3">
+            <div class="form-group"><label class="form-label">省份 *</label><input type="text" name="sender_province" class="form-input" required placeholder="例如：广东省"></div>
+            <div class="form-group"><label class="form-label">城市 *</label><input type="text" name="sender_city" class="form-input" required placeholder="例如：深圳市"></div>
+            <div class="form-group"><label class="form-label">区县 *</label><input type="text" name="sender_district" class="form-input" required placeholder="例如：南山区"></div>
+        </div>
+        <div class="form-group"><label class="form-label">详细地址 *</label><input type="text" name="sender_address" class="form-input" required placeholder="街道 + 门牌号"></div>
+
+        <h3 style="margin:20px 0 12px;color:var(--primary)">📥 收件人信息</h3>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">姓名 *</label><input type="text" name="receiver_name" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">电话 *</label><input type="text" name="receiver_phone" class="form-input" required placeholder="手机号"></div>
+        </div>
+        <div class="form-row-3">
+            <div class="form-group"><label class="form-label">省份 *</label><input type="text" name="receiver_province" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">城市 *</label><input type="text" name="receiver_city" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">区县 *</label><input type="text" name="receiver_district" class="form-input" required></div>
+        </div>
+        <div class="form-group"><label class="form-label">详细地址 *</label><input type="text" name="receiver_address" class="form-input" required></div>
+
+        <h3 style="margin:20px 0 12px;color:var(--primary)">📦 包裹信息</h3>
+        <div class="form-row-3">
+            <div class="form-group"><label class="form-label">重量(kg) *</label><input type="number" name="weight" class="form-input" required step="0.1" min="0.1"></div>
+            <div class="form-group"><label class="form-label">物品类别 *</label>
+                <select name="goods_type" class="form-select" required>
+                    <option value="">请选择</option>
+                    <option value="文件">文件</option>
+                    <option value="衣物">衣物</option>
+                    <option value="电子产品">电子产品</option>
+                    <option value="食品">食品</option>
+                    <option value="日用品">日用品</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">包装费</label>
+                <select name="packaging_fee" class="form-select">
+                    <option value="0">无需包装 ¥0</option>
+                    <option value="2">简易包装 ¥2</option>
+                    <option value="5">标准包装 ¥5</option>
+                    <option value="10">加固包装 ¥10</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group"><label class="form-label">物品描述</label><textarea name="goods_desc" class="form-textarea" placeholder="请描述物品内容（选填）"></textarea></div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" name="is_insured" id="insured_check" onchange="document.getElementById('insured_amount').disabled=!this.checked">
+                    保价寄送
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="form-label">保价金额(元)</label>
+                <input type="number" name="insured_amount" id="insured_amount" class="form-input" disabled placeholder="声明价值">
+            </div>
+        </div>
+
+        <div style="margin-top:24px;display:flex;gap:12px">
+            <button type="submit" class="btn btn-primary btn-lg">📝 提交订单</button>
+            <a href="{% url 'home' %}" class="btn btn-outline btn-lg">取消</a>
+        </div>
+    </form>
+</div>
+<script>
+document.getElementById('insured_check')?.addEventListener('change', function() {
+    document.getElementById('insured_amount').disabled = !this.checked;
+});
+</script>
+{% endblock %}

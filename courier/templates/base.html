@@ -1,0 +1,106 @@
+{% load static %}{% now "Y" as current_year %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}快递管理系统{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="app-container">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">📦</div>
+            <span>快递管理系统</span>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">概览</div>
+            <a href="{% url 'home' %}" class="nav-item {% if active_nav == 'home' %}active{% endif %}">
+                <span class="nav-icon">📊</span><span>首页看板</span>
+            </a>
+
+            <div class="nav-section">用户服务</div>
+            <a href="{% url 'order_create' %}" class="nav-item {% if active_nav == 'order_create' %}active{% endif %}">
+                <span class="nav-icon">📝</span><span>在线寄件</span>
+            </a>
+            <a href="{% url 'order_list' %}" class="nav-item {% if active_nav == 'orders' %}active{% endif %}">
+                <span class="nav-icon">📋</span><span>我的订单</span>
+            </a>
+            <a href="{% url 'tracking_search' %}" class="nav-item {% if active_nav == 'tracking' %}active{% endif %}">
+                <span class="nav-icon">🔍</span><span>物流查询</span>
+            </a>
+            <a href="{% url 'address_list' %}" class="nav-item {% if active_nav == 'address' %}active{% endif %}">
+                <span class="nav-icon">📍</span><span>地址簿</span>
+            </a>
+
+            {% if user.is_authenticated and user.role == 'courier' %}
+            <div class="nav-section">快递员端</div>
+            <a href="{% url 'courier_dashboard' %}" class="nav-item {% if active_nav == 'courier' %}active{% endif %}">
+                <span class="nav-icon">🚚</span><span>工作台</span>
+            </a>
+            <a href="{% url 'courier_tasks' %}" class="nav-item">
+                <span class="nav-icon">📌</span><span>任务列表</span>
+            </a>
+            {% endif %}
+
+            {% if user.is_authenticated and user.role == 'station_admin' %}
+            <div class="nav-section">驿站端</div>
+            <a href="{% url 'station_dashboard' %}" class="nav-item {% if active_nav == 'station' %}active{% endif %}">
+                <span class="nav-icon">🏪</span><span>驿站工作台</span>
+            </a>
+            <a href="{% url 'station_inventory' %}" class="nav-item">
+                <span class="nav-icon">📦</span><span>库存管理</span>
+            </a>
+            {% endif %}
+
+            {% if user.is_authenticated and user.role == 'admin' %}
+            <div class="nav-section">后台管理</div>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item {% if active_nav == 'admin' %}active{% endif %}">
+                <span class="nav-icon">📈</span><span>运营看板</span>
+            </a>
+            <a href="/admin/" class="nav-item">
+                <span class="nav-icon">⚙️</span><span>系统管理</span>
+            </a>
+            {% endif %}
+        </nav>
+    </aside>
+
+    <!-- 主内容 -->
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-title">{% block page_title %}首页看板{% endblock %}</div>
+            <div class="topbar-right">
+                {% if user.is_authenticated %}
+                <div class="user-badge">
+                    <div class="avatar">{{ user.username|first|upper }}</div>
+                    <span>{{ user.get_role_display }}: {{ user.username }}</span>
+                </div>
+                <form method="post" action="{% url 'logout' %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline btn-sm">退出</button>
+                </form>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary btn-sm">登录</a>
+                <a href="{% url 'register' %}" class="btn btn-outline btn-sm">注册</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="content-area">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="card" style="background:{% if message.tags == 'success' %}#e6f4ea{% elif message.tags == 'error' %}#fce8e6{% else %}#fef7e0{% endif %};padding:12px 20px;margin-bottom:16px">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

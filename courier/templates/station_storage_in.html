@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block page_title %}包裹入库{% endblock %}
+{% block content %}
+<div class="card" style="max-width:600px;margin:0 auto">
+    <div class="card-header"><div class="card-title">📥 包裹入库</div></div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">运单号 *</label>
+            <input type="text" name="tracking_id" class="form-input" required placeholder="扫描或输入运单条码">
+        </div>
+        <div class="form-group">
+            <label class="form-label">选择驿站 *</label>
+            <select name="station_id" class="form-select" required>
+                <option value="">请选择驿站</option>
+                {% for s in stations %}
+                <option value="{{ s.id }}">{{ s.name }} - {{ s.address }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">货架编号</label>
+            <input type="text" name="shelf_no" class="form-input" placeholder="如 A-01（选填）">
+        </div>
+        <button type="submit" class="btn btn-primary">确认入库</button>
+        <a href="{% url 'station_inventory' %}" class="btn btn-outline">取消</a>
+    </form>
+</div>
+{% endblock %}

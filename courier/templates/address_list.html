@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block page_title %}地址簿{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📍 常用地址</div>
+        <a href="{% url 'address_add' %}" class="btn btn-primary btn-sm">+ 新增地址</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+        {% for addr in addresses %}
+        <div class="card" style="margin:0">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+                <span class="badge badge-primary">{{ addr.get_label_display }}</span>
+                <div>
+                    <a href="{% url 'address_edit' addr.id %}" class="btn btn-outline btn-sm">编辑</a>
+                    <a href="{% url 'address_delete' addr.id %}" class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</a>
+                </div>
+            </div>
+            <div style="font-weight:600;margin-bottom:4px">{{ addr.name }} · {{ addr.phone }}</div>
+            <div style="color:var(--gray-600);font-size:13px">{{ addr.province }}{{ addr.city }}{{ addr.district }}{{ addr.detail }}</div>
+            {% if addr.is_default %}<div class="badge badge-success" style="margin-top:8px">默认地址</div>{% endif %}
+        </div>
+        {% empty %}
+        <div class="empty-state" style="grid-column:1/-1">
+            <div class="empty-icon">📍</div>
+            <p>还没有常用地址</p>
+            <a href="{% url 'address_add' %}" class="btn btn-primary" style="margin-top:12px">添加地址</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

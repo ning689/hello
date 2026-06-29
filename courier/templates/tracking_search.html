@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block page_title %}物流查询{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header"><div class="card-title">🔍 查询快递</div></div>
+    <form method="get" action="{% url 'tracking_search' %}">
+        <div style="display:flex;gap:12px;max-width:500px">
+            <input type="text" name="tracking_id" class="form-input" value="{{ tracking_id }}" placeholder="输入运单号查询" required style="flex:1">
+            <button type="submit" class="btn btn-primary">查询</button>
+        </div>
+    </form>
+</div>
+
+{% if tracking_id and not order %}
+<div class="card" style="text-align:center;padding:40px">
+    <div style="font-size:48px;margin-bottom:12px">🔍</div>
+    <h3>未找到该运单</h3>
+    <p style="color:var(--gray-600)">请确认运单号是否正确</p>
+</div>
+{% endif %}
+
+{% if order %}
+<div class="card">
+    <div class="card-header"><div class="card-title">订单信息</div></div>
+    <div class="form-row">
+        <div><strong>运单号：</strong>{{ order.tracking_id }}</div>
+        <div><strong>状态：</strong><span class="badge
+            {% if order.order_status == 'delivered' %}badge-success
+            {% elif order.order_status == 'exception' or order.order_status == 'cancelled' %}badge-danger
+            {% elif order.order_status == 'waiting_pickup' %}badge-warning
+            {% else %}badge-primary{% endif %}">{{ order.get_order_status_display }}</span></div>
+    </div>
+    <div class="form-row">
+        <div><strong>寄件人：</strong>{{ order.sender_name }}</div>
+        <div><strong>收件人：</strong>{{ order.receiver_name }}</div>
+    </div>
+    <div><strong>寄件地址：</strong>{{ order.sender_province }}{{ order.sender_city }}{{ order.sender_district }}{{ order.sender_address }}</div>
+    <div><strong>收件地址：</strong>{{ order.receiver_province }}{{ order.receiver_city }}{{ order.receiver_district }}{{ order.receiver_address }}</div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">📍 物流轨迹</div></div>
+    <div class="timeline">
+        {% for log in logs %}
+        <div class="timeline-item {% if forloop.first %}current{% endif %}">
+            <div class="timeline-dot"></div>
+            <div class="timeline-time">{{ log.operate_time|date:"Y-m-d H:i:s" }}</div>
+            <div class="timeline-desc">{{ log.status_desc }}</div>
+            <div class="timeline-location">{% if log.location %}{{ log.location }} · {% endif %}{{ log.operator }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block page_title %}库存管理{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📦 包裹库存</div>
+        <div>
+            <a href="{% url 'station_storage_in' %}" class="btn btn-primary btn-sm">📥 入库</a>
+            <a href="{% url 'station_dashboard' %}" class="btn btn-outline btn-sm">← 工作台</a>
+        </div>
+    </div>
+    <div class="search-bar">
+        <a href="{% url 'station_inventory' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline{% endif %}">全部</a>
+        <a href="{% url 'station_inventory' %}?status=0" class="btn btn-sm {% if current_status == '0' %}btn-primary{% else %}btn-outline{% endif %}">在库</a>
+        <a href="{% url 'station_inventory' %}?status=1" class="btn btn-sm {% if current_status == '1' %}btn-primary{% else %}btn-outline{% endif %}">已取</a>
+        <a href="{% url 'station_inventory' %}?status=2" class="btn btn-sm {% if current_status == '2' %}btn-primary{% else %}btn-outline{% endif %}">滞留件</a>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead><tr><th>运单号</th><th>驿站</th><th>货架</th><th>取件码</th><th>状态</th><th>入库时间</th><th>出库时间</th><th>操作</th></tr></thead>
+            <tbody>
+                {% for inv in inventories %}
+                <tr>
+                    <td>{{ inv.tracking_id }}</td>
+                    <td>{{ inv.station.name }}</td>
+                    <td>{{ inv.shelf.shelf_no|default:"-" }}</td>
+                    <td><strong>{{ inv.pick_code }}</strong></td>
+                    <td><span class="badge 
+                        {% if inv.status == 0 %}badge-primary
+                        {% elif inv.status == 1 %}badge-success
+                        {% elif inv.status == 2 %}badge-danger
+                        {% else %}badge-gray{% endif %}">{{ inv.get_status_display }}</span></td>
+                    <td>{{ inv.storage_time|date:"Y-m-d H:i" }}</td>
+                    <td>{{ inv.out_time|date:"Y-m-d H:i"|default:"-" }}</td>
+                    <td>
+                        {% if inv.status == 0 %}
+                        <a href="{% url 'station_storage_out' inv.id %}" class="btn btn-success btn-sm">出库</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8"><div class="empty-state"><p>暂无库存记录</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

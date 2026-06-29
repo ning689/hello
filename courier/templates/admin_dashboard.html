@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block page_title %}运营看板{% endblock %}
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-icon blue">📦</div><div class="stat-info"><h3>{{ total_orders }}</h3><p>总订单数</p></div></div>
+    <div class="stat-card"><div class="stat-icon green">📥</div><div class="stat-info"><h3>{{ today_orders }}</h3><p>今日订单</p></div></div>
+    <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><h3>¥{{ today_revenue|floatformat:0 }}</h3><p>今日营收</p></div></div>
+    <div class="stat-card"><div class="stat-icon yellow">⏳</div><div class="stat-info"><h3>{{ pending }}</h3><p>待揽收</p></div></div>
+    <div class="stat-card"><div class="stat-icon blue">🚚</div><div class="stat-info"><h3>{{ in_transit }}</h3><p>运输中</p></div></div>
+    <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h3>{{ delivered }}</h3><p>已签收</p></div></div>
+    <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info"><h3>{{ exception }}</h3><p>异常件</p></div></div>
+    <div class="stat-card"><div class="stat-icon red">📌</div><div class="stat-info"><h3>{{ pending_tickets }}</h3><p>待处理工单</p></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">📊 订单状态分布</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px">
+        <div class="card" style="margin:0;text-align:center"><div style="font-size:13px;color:var(--gray-600)">待揽收</div><div style="font-size:24px;font-weight:700;color:var(--warning)">{{ status_data.pending }}</div></div>
+        <div class="card" style="margin:0;text-align:center"><div style="font-size:13px;color:var(--gray-600)">已揽收</div><div style="font-size:24px;font-weight:700;color:var(--primary)">{{ status_data.picked_up }}</div></div>
+        <div class="card" style="margin:0;text-align:center"><div style="font-size:13px;color:var(--gray-600)">运输中</div><div style="font-size:24px;font-weight:700;color:var(--info)">{{ status_data.in_transit }}</div></div>
+        <div class="card" style="margin:0;text-align:center"><div style="font-size:13px;color:var(--gray-600)">派送中</div><div style="font-size:24px;font-weight:700;color:var(--primary)">{{ status_data.delivering }}</div></div>
+        <div class="card" style="margin:0;text-align:center"><div style="font-size:13px;color:var(--gray-600)">已签收</div><div style="font-size:24px;font-weight:700;color:var(--success)">{{ status_data.delivered }}</div></div>
+        <div class="card" style="margin:0;text-align:center"><div style="font-size:13px;color:var(--gray-600)">异常</div><div style="font-size:24px;font-weight:700;color:var(--danger)">{{ status_data.exception }}</div></div>
+        <div class="card" style="margin:0;text-align:center"><div style="font-size:13px;color:var(--gray-600)">已取消</div><div style="font-size:24px;font-weight:700;color:var(--gray-600)">{{ status_data.cancelled }}</div></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">📈 月度趋势</div></div>
+    <div class="table-container">
+        <table>
+            <thead><tr><th>日期</th><th>总订单</th><th>揽收量</th><th>签收量</th><th>异常量</th><th>营收(¥)</th></tr></thead>
+            <tbody>
+                {% for s in daily_stats %}
+                <tr>
+                    <td>{{ s.date }}</td>
+                    <td>{{ s.total_orders }}</td>
+                    <td>{{ s.pickup_count }}</td>
+                    <td>{{ s.delivery_count }}</td>
+                    <td><span class="badge {% if s.exception_count > 0 %}badge-danger{% else %}badge-success{% endif %}">{{ s.exception_count }}</span></td>
+                    <td>¥{{ s.revenue|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6"><div class="empty-state"><p>暂无统计数据</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">🏢 网点排行</div></div>
+    <div class="table-container">
+        <table>
+            <thead><tr><th>#</th><th>网点名称</th><th>城市</th><th>订单数</th></tr></thead>
+            <tbody>
+                {% for b in branches %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ b.name }}</td>
+                    <td>{{ b.city }}</td>
+                    <td>{{ b.order_count }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4"><div class="empty-state"><p>暂无网点数据</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">⚠️ 最近异常工单</div></div>
+    <div class="table-container">
+        <table>
+            <thead><tr><th>工单号</th><th>类型</th><th>优先级</th><th>状态</th><th>上报时间</th></tr></thead>
+            <tbody>
+                {% for t in recent_tickets %}
+                <tr>
+                    <td>{{ t.ticket_no }}</td>
+                    <td>{{ t.get_anomaly_type_display }}</td>
+                    <td><span class="badge {% if t.priority == 'high' %}badge-danger{% elif t.priority == 'medium' %}badge-warning{% else %}badge-gray{% endif %}">{{ t.get_priority_display }}</span></td>
+                    <td><span class="badge {% if t.status == 'pending' %}badge-warning{% elif t.status == 'processing' %}badge-primary{% else %}badge-success{% endif %}">{{ t.get_status_display }}</span></td>
+                    <td>{{ t.report_time|date:"m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5"><div class="empty-state"><p>暂无工单</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📋 最近订单</div>
+        <a href="/admin/" class="btn btn-outline btn-sm">管理后台 →</a>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead><tr><th>订单号</th><th>运单号</th><th>寄件人</th><th>收件人</th><th>状态</th><th>金额</th><th>时间</th></tr></thead>
+            <tbody>
+                {% for o in recent_orders %}
+                <tr>
+                    <td>{{ o.order_no }}</td><td>{{ o.tracking_id|default:"-" }}</td>
+                    <td>{{ o.sender_name }}</td><td>{{ o.receiver_name }}</td>
+                    <td><span class="badge 
+                        {% if o.order_status == 'delivered' %}badge-success
+                        {% elif o.order_status == 'exception' or o.order_status == 'cancelled' %}badge-danger
+                        {% elif o.order_status == 'waiting_pickup' %}badge-warning
+                        {% else %}badge-primary{% endif %}">{{ o.get_order_status_display }}</span></td>
+                    <td>¥{{ o.total_fee }}</td><td>{{ o.created_at|date:"m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7"><div class="empty-state"><p>暂无订单</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

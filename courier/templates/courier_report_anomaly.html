@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block page_title %}异常上报{% endblock %}
+{% block content %}
+<div class="card" style="max-width:600px;margin:0 auto">
+    <div class="card-header"><div class="card-title">⚠️ 异常上报</div></div>
+    <p style="margin-bottom:16px;color:var(--gray-600)">订单：{{ task.order.order_no }} - {{ task.order.receiver_name }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">异常类型 *</label>
+            <select name="anomaly_type" class="form-select" required>
+                <option value="">请选择</option>
+                <option value="wrong_address">地址错误</option>
+                <option value="cant_reach">联系不上收件人</option>
+                <option value="package_damaged">包裹破损</option>
+                <option value="rejected">拒收退回</option>
+                <option value="out_of_area">超区无法派送</option>
+                <option value="other">其他</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">问题描述 *</label>
+            <textarea name="description" class="form-textarea" required placeholder="请详细描述异常情况"></textarea>
+        </div>
+        <button type="submit" class="btn btn-danger">提交上报</button>
+        <a href="{% url 'courier_tasks' %}" class="btn btn-outline">取消</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block page_title %}订单详情{% endblock %}
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-icon blue">📋</div><div class="stat-info"><h3 style="font-size:16px">{{ order.order_no }}</h3><p>订单号</p></div></div>
+    <div class="stat-card"><div class="stat-icon blue">🔢</div><div class="stat-info"><h3 style="font-size:16px">{{ order.tracking_id|default:"待分配" }}</h3><p>运单号</p></div></div>
+    <div class="stat-card">
+        <div class="stat-icon {% if order.order_status == 'delivered' %}green{% elif order.order_status == 'exception' or order.order_status == 'cancelled' %}red{% elif order.order_status == 'waiting_pickup' %}yellow{% else %}blue{% endif %}">
+            📌
+        </div>
+        <div class="stat-info"><h3>{{ order.get_order_status_display }}</h3><p>当前状态</p></div>
+    </div>
+    <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><h3>¥{{ order.total_fee }}</h3><p>总费用</p></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">📤 寄件信息</div></div>
+    <div class="form-row"><div><strong>姓名：</strong>{{ order.sender_name }}</div><div><strong>电话：</strong>{{ order.sender_phone }}</div></div>
+    <div><strong>地址：</strong>{{ order.sender_province }}{{ order.sender_city }}{{ order.sender_district }}{{ order.sender_address }}</div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">📥 收件信息</div></div>
+    <div class="form-row"><div><strong>姓名：</strong>{{ order.receiver_name }}</div><div><strong>电话：</strong>{{ order.receiver_phone }}</div></div>
+    <div><strong>地址：</strong>{{ order.receiver_province }}{{ order.receiver_city }}{{ order.receiver_district }}{{ order.receiver_address }}</div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">📦 包裹信息</div></div>
+    <div class="form-row-3">
+        <div><strong>重量：</strong>{{ order.weight }} kg</div>
+        <div><strong>物品类别：</strong>{{ order.goods_type }}</div>
+        <div><strong>保价：</strong>{% if order.is_insured %}¥{{ order.insured_amount }}{% else %}未保价{% endif %}</div>
+    </div>
+    {% if order.goods_desc %}<div><strong>描述：</strong>{{ order.goods_desc }}</div>{% endif %}
+    <div class="form-row-3" style="margin-top:8px">
+        <div><strong>运费：</strong>¥{{ order.freight_fee }}</div>
+        <div><strong>保价费：</strong>¥{{ order.insurance_fee }}</div>
+        <div><strong>包装费：</strong>¥{{ order.packaging_fee }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">📍 物流轨迹</div></div>
+    <div class="timeline">
+        {% for log in tracking_logs %}
+        <div class="timeline-item {% if forloop.first %}current{% else %}active{% endif %}">
+            <div class="timeline-dot"></div>
+            <div class="timeline-time">{{ log.operate_time|date:"Y-m-d H:i:s" }}</div>
+            <div class="timeline-desc">{{ log.status_desc }}</div>
+            <div class="timeline-location">{% if log.location %}{{ log.location }} · {% endif %}{{ log.operator }}</div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><p>暂无轨迹信息</p></div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if order.order_status == 'waiting_pickup' %}
+<div style="text-align:center;margin-top:16px">
+    <a href="{% url 'order_cancel' order.id %}" class="btn btn-danger" onclick="return confirm('确认取消此订单？')">取消订单</a>
+</div>
+{% endif %}
+
+<div style="margin-top:16px"><a href="{% url 'order_list' %}" class="btn btn-outline">← 返回订单列表</a></div>
+{% endblock %}
