@@ -1,3 +1,4 @@
+import os
 """
 Django settings for courier_system project.
 
@@ -25,7 +26,8 @@ SECRET_KEY = 'django-insecure-%9-^ba#z(+7_4k54y6ev5$*#uref82cpavt7qe!(mex)9@vml!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 
 
 # Application definition
